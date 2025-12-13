@@ -7,45 +7,52 @@ import plotly.express as px
 st.set_page_config(page_title="Bombeiros PE", layout="wide")
 
 
-# Lista completa dos Municípios de Pernambuco (185) para uso no DataFrame
-municipios_pe = [
-    'Recife', 'Jaboatão dos Guararapes', 'Olinda', 'Caruaru', 'Petrolina',
-    'Paulista', 'Cabo de Santo Agostinho', 'Camaragibe', 'Garanhuns',
-    'Vitória de Santo Antão', 'Igarassu', 'São Lourenço da Mata',
-    'Ipojuca', 'Santa Cruz do Capibaribe', 'Abreu e Lima', 'Serra Talhada',
-    'Gravatá', 'Araripina', 'Goiana', 'Belo Jardim', 'Carpina',
-    'Arcoverde', 'Ouricuri', 'Surubim', 'Salgueiro', 'Pesqueira',
-    'Bezerros', 'Escada', 'Paudalho', 'Limoeiro', 'Moreno', 'Palmares',
-    'Buíque', 'São Bento do Una', 'Brejo da Madre de Deus', 'Timbaúba',
-    'Bom Conselho', 'Águas Belas', 'Toritama', 'Santa Maria da Boa Vista',
-    'Afogados da Ingazeira', 'Barreiros', 'Lajedo', 'Custódia',
-    'Bom Jardim', 'Sirinhaém', 'Bonito', 'São Caitano', 'Aliança',
-    'São José do Belmonte', 'Itambé', 'Bodocó', 'Petrolândia', 'Sertânia',
-    'Ribeirão', 'Itaíba', 'Exu', 'Catende', 'São José do Egito',
-    'Nazaré da Mata', 'Trindade', 'Cabrobó', 'Floresta', 'Ipubi',
-    'Caetés', 'Glória do Goitá', 'Passira', 'Itapissuma', 'Tabira',
-    'João Alfredo', 'Ibimirim', 'Inajá', 'Vicência', 'Água Preta',
-    'Tupanatinga', 'Pombos', 'Manari', 'Ilha de Itamaracá', 'Condado',
-    'Canhotinho', 'Lagoa Grande', 'Tacaratu', 'São João', 'Macaparana',
-    'Agrestina', 'Tamandaré', 'Cupira', 'Pedra', 'Panelas', 'Vertentes',
-    'Orobó', 'Feira Nova', 'Riacho das Almas', 'Chã Grande', 'Altinho',
-    'Flores', 'Cachoeirinha', 'Rio Formoso', 'São Joaquim do Monte',
-    'Araçoiaba', 'Lagoa de Itaenga', 'Carnaíba', 'São José da Coroa Grande',
-    'Afrânio', 'Alagoinha', 'Amaraji', 'Angelim', 'Barra de Guabiraba',
-    'Belém de Maria', 'Belém do São Francisco', 'Betânia', 'Brejão',
-    'Brejinho', 'Buenos Aires', 'Calçado', 'Calumbi', 'Camocim de São Félix',
-    'Camutanga', 'Capoeiras', 'Carnaubeira da Penha', 'Casinhas', 'Cedro',
-    'Chã de Alegria', 'Correntes', 'Cortês', 'Cumaru', 'Dormentes',
-    'Ferreiros', 'Frei Miguelinho', 'Gameleira', 'Granito', 'Iati',
-    'Ibirajuba', 'Iguaraci', 'Ingazeira', 'Itacuruba', 'Itapetim',
-    'Itaquitinga', 'Jaqueira', 'Jataúba', 'Jatobá', 'Joaquim Nabuco',
-    'Jucati', 'Jupi', 'Jurema', 'Lagoa do Carro', 'Lagoa do Ouro',
-    'Lagoa dos Gatos', 'Machados', 'Maraial', 'Mirandiba', 'Moreilândia',
-    'Orocó', 'Parnamirim', 'Poção', 'Ponto Novo', 'Primavera', 'Quipapá',
-    'Quixaba', 'Saloá', 'Sanharó', 'Santa Cruz da Baixa Verde',
-    'Santa Filomena', 'Santa Terezinha', 'São Benedito do Sul',
-    'São Vicente Ferrer', 'Serra Negra do Norte', 'Serrita', 'Tacaimbó',
+# Mapeamento dos Municípios e Mesorregiões de PE (Amostra representativa para o filtro de região)
+# O restante dos 185 municípios será incluído na categoria "Outras Regiões" se não estiverem aqui.
+MAP_REGIOES = {
+    'Recife': 'Metropolitana', 'Jaboatão dos Guararapes': 'Metropolitana', 'Olinda': 'Metropolitana',
+    'Paulista': 'Metropolitana', 'Cabo de Santo Agostinho': 'Metropolitana', 'Camaragibe': 'Metropolitana',
+    'Caruaru': 'Agreste', 'Garanhuns': 'Agreste', 'Santa Cruz do Capibaribe': 'Agreste',
+    'Belo Jardim': 'Agreste', 'Vitória de Santo Antão': 'Zona da Mata', 'Goiana': 'Zona da Mata',
+    'Palmares': 'Zona da Mata', 'Serra Talhada': 'Sertão', 'Arcoverde': 'Sertão', 'Salgueiro': 'Sertão',
+    'Petrolina': 'São Francisco', 'Santa Maria da Boa Vista': 'São Francisco', 'Cabrobó': 'São Francisco',
+}
+
+# Lista completa dos Municípios de Pernambuco (185)
+municipios_pe = list(MAP_REGIOES.keys()) + [
+    'Abreu e Lima', 'Igarassu', 'São Lourenço da Mata', 'Ipojuca', 'Gravatá', 'Araripina', 'Carpina',
+    'Ouricuri', 'Surubim', 'Pesqueira', 'Bezerros', 'Escada', 'Paudalho', 'Limoeiro', 'Moreno',
+    'Buíque', 'São Bento do Una', 'Brejo da Madre de Deus', 'Timbaúba', 'Bom Conselho', 'Águas Belas', 
+    'Toritama', 'Afogados da Ingazeira', 'Barreiros', 'Lajedo', 'Custódia', 'Bom Jardim', 
+    'Sirinhaém', 'Bonito', 'São Caitano', 'Aliança', 'São José do Belmonte', 'Itambé', 'Bodocó', 
+    'Petrolândia', 'Sertânia', 'Ribeirão', 'Itaíba', 'Exu', 'Catende', 'São José do Egito',
+    'Nazaré da Mata', 'Trindade', 'Floresta', 'Ipubi', 'Caetés', 'Glória do Goitá', 'Passira', 
+    'Itapissuma', 'Tabira', 'João Alfredo', 'Ibimirim', 'Inajá', 'Vicência', 'Água Preta',
+    'Tupanatinga', 'Pombos', 'Manari', 'Ilha de Itamaracá', 'Condado', 'Canhotinho', 'Lagoa Grande', 
+    'Tacaratu', 'São João', 'Macaparana', 'Agrestina', 'Tamandaré', 'Cupira', 'Pedra', 'Panelas', 
+    'Vertentes', 'Orobó', 'Feira Nova', 'Riacho das Almas', 'Chã Grande', 'Altinho', 'Flores', 
+    'Cachoeirinha', 'Rio Formoso', 'São Joaquim do Monte', 'Araçoiaba', 'Lagoa de Itaenga', 
+    'Carnaíba', 'São José da Coroa Grande', 'Afrânio', 'Alagoinha', 'Amaraji', 'Angelim', 
+    'Barra de Guabiraba', 'Belém de Maria', 'Belém do São Francisco', 'Betânia', 'Brejão',
+    'Brejinho', 'Buenos Aires', 'Calçado', 'Calumbi', 'Camocim de São Félix', 'Camutanga', 
+    'Capoeiras', 'Carnaubeira da Penha', 'Casinhas', 'Cedro', 'Chã de Alegria', 'Correntes', 
+    'Cortês', 'Cumaru', 'Dormentes', 'Ferreiros', 'Frei Miguelinho', 'Gameleira', 'Granito', 
+    'Iati', 'Ibirajuba', 'Iguaraci', 'Ingazeira', 'Itacuruba', 'Itapetim', 'Itaquitinga', 
+    'Jaqueira', 'Jataúba', 'Jatobá', 'Joaquim Nabuco', 'Jucati', 'Jupi', 'Jurema', 'Lagoa do Carro', 
+    'Lagoa do Ouro', 'Lagoa dos Gatos', 'Machados', 'Maraial', 'Mirandiba', 'Moreilândia', 
+    'Orocó', 'Parnamirim', 'Poção', 'Ponto Novo', 'Primavera', 'Quipapá', 'Quixaba', 'Saloá', 
+    'Sanharó', 'Santa Cruz da Baixa Verde', 'Santa Filomena', 'Santa Terezinha', 
+    'São Benedito do Sul', 'São Vicente Ferrer', 'Serra Negra do Norte', 'Serrita', 'Tacaimbó', 
     'Terra Nova', 'Venturosa', 'Verdejante', 'Vertente do Lério'
+]
+
+
+# Definição dos Bairros Fictícios para simulação de filtro
+# A lista de bairros será usada aleatoriamente em todo o DF
+BAIRROS_COMUNS = [
+    'Centro', 'Boa Viagem', 'Madalena', 'Boa Vista', 'Porto', 'Caxangá', 
+    'Ipsep', 'Santo Antônio', 'Casa Amarela', 'Jardim Paulista', 'Piedade',
+    'Cohab', 'Sertãozinho', 'Nova Esperança', 'Agreste Novo', 'Rio Doce'
 ]
 
 
@@ -103,12 +110,12 @@ st.markdown("""
     /* Textos Gerais */
     h3 { font-size: 18px; margin: 0; color: white !important; font-weight: 500; }
 
-    /* NOVO: Título específico do Menu Lateral - GARANTINDO QUE SEJA PRETO */
+    /* Título específico do Menu Lateral - GARANTINDO QUE SEJA PRETO */
     .sidebar-title h3 {
         color: #000000 !important; /* Cor preta */
         font-size: 20px;
         font-weight: 600;
-        margin-top: 5px; /* Ajuste para o espaçamento */
+        margin-top: 5px; 
     }
     
     /* Box da Previsão */
@@ -125,7 +132,6 @@ st.markdown("""
 with st.sidebar:
     st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Bras%C3%A3o_CBMPE.png/120px-Bras%C3%A3o_CBMPE.png", width=60)
     
-    # APLICAÇÃO DA NOVA CLASSE PARA FORÇAR O PRETO
     st.markdown('<div class="sidebar-title">### **Bombeiros PE**</div>', unsafe_allow_html=True)
     
     menu_selecionado = st.radio(
@@ -148,18 +154,43 @@ with st.sidebar:
             ]
             faixas = ['18-25 anos', '26-35 anos', '36-50 anos', '51-65 anos', 'Mais de 65 anos']
             
+            # --- 2. CRIAÇÃO DO DATAFRAME COM A COLUNA DE BAIRRO ---
             df = pd.DataFrame({
-                'Bairro': np.random.choice(municipios_pe, 1000),
+                'Cidade': np.random.choice(municipios_pe, 1000),
+                'Bairro': np.random.choice(BAIRROS_COMUNS, 1000), # Nova coluna de Bairro
                 'Tipo': np.random.choice(tipos_ocorrencia, 1000),
                 'Status': np.random.choice(['Concluído', 'Em Andamento', 'Aberto'], 1000),
                 'Faixa Etaria': np.random.choice(faixas, 1000, p=[0.2, 0.3, 0.25, 0.15, 0.1]),
                 'Risco': np.random.randint(10, 100, 1000),
-                'Latitude': np.random.uniform(-8.05, -8.15, 1000),
-                'Longitude': np.random.uniform(-34.88, -34.95, 1000)
+                'Latitude': np.random.uniform(-7.5, -9.5, 1000), 
+                'Longitude': np.random.uniform(-34.8, -40.5, 1000)
             })
+
+            # Adicionando a coluna de Região
+            df['Regiao'] = df['Cidade'].apply(lambda x: MAP_REGIOES.get(x, 'Outras Regiões'))
             
-            bairro_sel = st.multiselect("Cidade / Bairro", df['Bairro'].unique(), default=['Recife', 'Caruaru', 'Petrolina'])
-            df_filtrado = df[df['Bairro'].isin(bairro_sel)]
+            # --- 3. FILTROS EM CASCATA ---
+            
+            # FILTRO 1: REGIÃO
+            regiao_sel = st.multiselect("Região", df['Regiao'].unique(), 
+                                        default=['Metropolitana', 'Agreste'])
+            
+            df_regiao = df[df['Regiao'].isin(regiao_sel)]
+
+            # FILTRO 2: CIDADE (só exibe cidades dentro da região selecionada)
+            cidade_opcoes = df_regiao['Cidade'].unique()
+            cidade_sel = st.multiselect("Cidade", cidade_opcoes, 
+                                        default=[c for c in ['Recife', 'Caruaru'] if c in cidade_opcoes])
+
+            df_cidade = df_regiao[df_regiao['Cidade'].isin(cidade_sel)]
+            
+            # FILTRO 3: BAIRRO (só exibe bairros dentro das cidades selecionadas)
+            bairro_opcoes = df_cidade['Bairro'].unique()
+            bairro_sel = st.multiselect("Bairro", bairro_opcoes, 
+                                        default=bairro_opcoes if len(bairro_opcoes) < 5 else bairro_opcoes[:5])
+
+            # FILTRO FINAL
+            df_filtrado = df_cidade[df_cidade['Bairro'].isin(bairro_sel)]
 
     st.markdown("---")
     col_p1, col_p2 = st.columns([1, 4])
@@ -192,10 +223,20 @@ if menu_selecionado == "Dashboard":
 
     st.write("")
     
+    # --- MAPA DE DISTRIBUIÇÃO ESPACIAL ---
+    st.markdown("##### Distribuição Espacial das Ocorrências")
+    
+    if not df_filtrado.empty:
+        mapa_data = df_filtrado[['Latitude', 'Longitude']].rename(columns={'Latitude': 'lat', 'Longitude': 'lon'})
+        st.map(mapa_data, zoom=6) 
+    else:
+        st.info("Filtre pelo menos uma cidade e um bairro para visualizar a distribuição no mapa.")
+        
+    st.markdown("---") 
+
     # --- GRÁFICOS ---
     col_g1, col_g2, col_g3 = st.columns(3)
 
-    # Config do Hover Amarelo
     hover_config = dict(bgcolor="#FFD700", font_size=14, font_family="Arial", font_color="black")
 
     with col_g1:
@@ -240,7 +281,7 @@ if menu_selecionado == "Dashboard":
     with c_ia1:
         st.markdown("##### Fatores Determinantes nos Tipos de Caso")
         fatores = pd.DataFrame({
-            'Fator': ['Localização (Cidade/Bairro)', 'Horário da Ocorrência', 'Clima / Chuva', 'Infraestrutura Urbana'],
+            'Fator': ['Localização (Bairro)', 'Horário da Ocorrência', 'Clima / Chuva', 'Infraestrutura Urbana'],
             'Peso': [0.85, 0.70, 0.40, 0.20]
         }).sort_values('Peso')
         
@@ -254,10 +295,16 @@ if menu_selecionado == "Dashboard":
         st.markdown('<div class="prediction-box">', unsafe_allow_html=True)
         col_in1, col_in2 = st.columns(2)
         
-        with col_in1: local = st.selectbox("Cidade / Bairro", municipios_pe, key="bairro_simulador")
+        # O selectbox agora usa a lista de cidades/bairros
+        with col_in1: 
+            # Garantindo que o selectbox use apenas as opções disponíveis no DF original
+            local_options = df['Cidade'].unique().tolist()
+            local = st.selectbox("Cidade", local_options, key="cidade_simulador")
+        
         with col_in2: tipo = st.selectbox("Ocorrência", tipos_ocorrencia, key="tipo_simulador")
         
         if st.button("Prever Risco", type="primary"):
+            # AQUI ESTÁ A LÓGICA DO ML QUE DEVE SER SUBSTITUÍDA PELO SEU MODELO
             risco = 87
             if tipo == "Improcedentes / Trotes":
                 st.warning(f"Alerta: Alta probabilidade de TROTE ({risco}%) em {local}.")
