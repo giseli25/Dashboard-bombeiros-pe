@@ -8,7 +8,6 @@ st.set_page_config(page_title="Bombeiros PE", layout="wide")
 
 
 # Mapeamento dos Municípios e Mesorregiões de PE (Amostra representativa para o filtro de região)
-# O restante dos 185 municípios será incluído na categoria "Outras Regiões" se não estiverem aqui.
 MAP_REGIOES = {
     'Recife': 'Metropolitana', 'Jaboatão dos Guararapes': 'Metropolitana', 'Olinda': 'Metropolitana',
     'Paulista': 'Metropolitana', 'Cabo de Santo Agostinho': 'Metropolitana', 'Camaragibe': 'Metropolitana',
@@ -48,7 +47,6 @@ municipios_pe = list(MAP_REGIOES.keys()) + [
 
 
 # Definição dos Bairros Fictícios para simulação de filtro
-# A lista de bairros será usada aleatoriamente em todo o DF
 BAIRROS_COMUNS = [
     'Centro', 'Boa Viagem', 'Madalena', 'Boa Vista', 'Porto', 'Caxangá', 
     'Ipsep', 'Santo Antônio', 'Casa Amarela', 'Jardim Paulista', 'Piedade',
@@ -66,7 +64,7 @@ st.markdown("""
         border-radius: 8px;
         padding: 20px;
         color: white;
-        height: 140px; 
+        height: 160px; /* AUMENTADO: Garante mais espaço e resolve o "espremido" */
         box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         font-family: 'Segoe UI', sans-serif;
         transition: transform 0.2s, border 0.2s;
@@ -95,7 +93,7 @@ st.markdown("""
     }
     
     .card-value {
-        font-size: 36px;
+        font-size: 48px; /* AUMENTADO: O número principal fica maior */
         font-weight: bold;
         margin-top: 5px;
         line-height: 1;
@@ -112,7 +110,7 @@ st.markdown("""
 
     /* Título específico do Menu Lateral - GARANTINDO QUE SEJA PRETO */
     .sidebar-title h3 {
-        color: #000000 !important; /* Cor preta */
+        color: #000000 !important; 
         font-size: 20px;
         font-weight: 600;
         margin-top: 5px; 
@@ -154,10 +152,10 @@ with st.sidebar:
             ]
             faixas = ['18-25 anos', '26-35 anos', '36-50 anos', '51-65 anos', 'Mais de 65 anos']
             
-            # --- 2. CRIAÇÃO DO DATAFRAME COM A COLUNA DE BAIRRO ---
+            # --- CRIAÇÃO DO DATAFRAME COM A COLUNA DE BAIRRO ---
             df = pd.DataFrame({
                 'Cidade': np.random.choice(municipios_pe, 1000),
-                'Bairro': np.random.choice(BAIRROS_COMUNS, 1000), # Nova coluna de Bairro
+                'Bairro': np.random.choice(BAIRROS_COMUNS, 1000), 
                 'Tipo': np.random.choice(tipos_ocorrencia, 1000),
                 'Status': np.random.choice(['Concluído', 'Em Andamento', 'Aberto'], 1000),
                 'Faixa Etaria': np.random.choice(faixas, 1000, p=[0.2, 0.3, 0.25, 0.15, 0.1]),
@@ -169,7 +167,7 @@ with st.sidebar:
             # Adicionando a coluna de Região
             df['Regiao'] = df['Cidade'].apply(lambda x: MAP_REGIOES.get(x, 'Outras Regiões'))
             
-            # --- 3. FILTROS EM CASCATA ---
+            # --- FILTROS EM CASCATA ---
             
             # FILTRO 1: REGIÃO
             regiao_sel = st.multiselect("Região", df['Regiao'].unique(), 
@@ -223,16 +221,43 @@ if menu_selecionado == "Dashboard":
 
     st.write("")
     
-    # --- MAPA DE DISTRIBUIÇÃO ESPACIAL ---
+    # --- MAPA DE DISTRIBUIÇÃO ESPACIAL (AGORA COM PLOTLY) ---
     st.markdown("##### Distribuição Espacial das Ocorrências")
     
     if not df_filtrado.empty:
-        mapa_data = df_filtrado[['Latitude', 'Longitude']].rename(columns={'Latitude': 'lat', 'Longitude': 'lon'})
-        st.map(mapa_data, zoom=6) 
-    else:
-        st.info("Filtre pelo menos uma cidade e um bairro para visualizar a distribuição no mapa.")
         
-    st.markdown("---") 
+        # 1. Cria o mapa de dispersão (scatter mapbox) com Plotly Express
+        fig_map = px.scatter_mapbox(
+            df_filtrado, 
+            lat="Latitude", 
+            lon="Longitude", 
+            color="Tipo", # Colore os pontos pelo tipo de ocorrência
+            hover_name="Bairro", 
+            zoom=7, # Zoom para o estado de PE
+            height=500,
+            size_max=15, # DESTAQUE: Define o tamanho máximo dos pontos
+            size=np.ones(len(df_filtrado)), # Usa um tamanho base 1 para ter o size_max como limite
+            mapbox_style="carto-positron" # Estilo de mapa claro e limpo
+        )
+        
+        # 2. Ajusta as cores, centro e marcadores (AUMENTA A VISIBILIDADE DOS PONTOS)
+        fig_map.update_layout(
+            margin={"r":0,"t":0,"l":0,"b":0},
+            mapbox={
+                'center': {'lat': -8.3, 'lon': -37.9}, # Centro aproximado de PE
+                'zoom': 6.5 # Zoom levemente maior
+            },
+            # Aumenta o tamanho dos marcadores de forma programática (opcional)
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        )
+        
+        # 3. Exibe o mapa no Streamlit
+        st.plotly_chart(fig_map, use_container_width=True)
+        
+    else:
+        st.info("Filtre pelo menos uma região, cidade ou bairro para visualizar a distribuição no mapa.")
+        
+    st.markdown("---") # Separador visual
 
     # --- GRÁFICOS ---
     col_g1, col_g2, col_g3 = st.columns(3)
@@ -295,16 +320,14 @@ if menu_selecionado == "Dashboard":
         st.markdown('<div class="prediction-box">', unsafe_allow_html=True)
         col_in1, col_in2 = st.columns(2)
         
-        # O selectbox agora usa a lista de cidades/bairros
         with col_in1: 
-            # Garantindo que o selectbox use apenas as opções disponíveis no DF original
             local_options = df['Cidade'].unique().tolist()
             local = st.selectbox("Cidade", local_options, key="cidade_simulador")
         
         with col_in2: tipo = st.selectbox("Ocorrência", tipos_ocorrencia, key="tipo_simulador")
         
         if st.button("Prever Risco", type="primary"):
-            # AQUI ESTÁ A LÓGICA DO ML QUE DEVE SER SUBSTITUÍDA PELO SEU MODELO
+            # LÓGICA DO ML DEVE SER IMPLEMENTADA AQUI
             risco = 87
             if tipo == "Improcedentes / Trotes":
                 st.warning(f"Alerta: Alta probabilidade de TROTE ({risco}%) em {local}.")
