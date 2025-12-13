@@ -7,6 +7,48 @@ import plotly.express as px
 st.set_page_config(page_title="Bombeiros PE", layout="wide")
 
 
+# Lista completa dos Municípios de Pernambuco (185) para uso no DataFrame
+municipios_pe = [
+    'Recife', 'Jaboatão dos Guararapes', 'Olinda', 'Caruaru', 'Petrolina',
+    'Paulista', 'Cabo de Santo Agostinho', 'Camaragibe', 'Garanhuns',
+    'Vitória de Santo Antão', 'Igarassu', 'São Lourenço da Mata',
+    'Ipojuca', 'Santa Cruz do Capibaribe', 'Abreu e Lima', 'Serra Talhada',
+    'Gravatá', 'Araripina', 'Goiana', 'Belo Jardim', 'Carpina',
+    'Arcoverde', 'Ouricuri', 'Surubim', 'Salgueiro', 'Pesqueira',
+    'Bezerros', 'Escada', 'Paudalho', 'Limoeiro', 'Moreno', 'Palmares',
+    'Buíque', 'São Bento do Una', 'Brejo da Madre de Deus', 'Timbaúba',
+    'Bom Conselho', 'Águas Belas', 'Toritama', 'Santa Maria da Boa Vista',
+    'Afogados da Ingazeira', 'Barreiros', 'Lajedo', 'Custódia',
+    'Bom Jardim', 'Sirinhaém', 'Bonito', 'São Caitano', 'Aliança',
+    'São José do Belmonte', 'Itambé', 'Bodocó', 'Petrolândia', 'Sertânia',
+    'Ribeirão', 'Itaíba', 'Exu', 'Catende', 'São José do Egito',
+    'Nazaré da Mata', 'Trindade', 'Cabrobó', 'Floresta', 'Ipubi',
+    'Caetés', 'Glória do Goitá', 'Passira', 'Itapissuma', 'Tabira',
+    'João Alfredo', 'Ibimirim', 'Inajá', 'Vicência', 'Água Preta',
+    'Tupanatinga', 'Pombos', 'Manari', 'Ilha de Itamaracá', 'Condado',
+    'Canhotinho', 'Lagoa Grande', 'Tacaratu', 'São João', 'Macaparana',
+    'Agrestina', 'Tamandaré', 'Cupira', 'Pedra', 'Panelas', 'Vertentes',
+    'Orobó', 'Feira Nova', 'Riacho das Almas', 'Chã Grande', 'Altinho',
+    'Flores', 'Cachoeirinha', 'Rio Formoso', 'São Joaquim do Monte',
+    'Araçoiaba', 'Lagoa de Itaenga', 'Carnaíba', 'São José da Coroa Grande',
+    'Afrânio', 'Alagoinha', 'Amaraji', 'Angelim', 'Barra de Guabiraba',
+    'Belém de Maria', 'Belém do São Francisco', 'Betânia', 'Brejão',
+    'Brejinho', 'Buenos Aires', 'Calçado', 'Calumbi', 'Camocim de São Félix',
+    'Camutanga', 'Capoeiras', 'Carnaubeira da Penha', 'Casinhas', 'Cedro',
+    'Chã de Alegria', 'Correntes', 'Cortês', 'Cumaru', 'Dormentes',
+    'Ferreiros', 'Frei Miguelinho', 'Gameleira', 'Granito', 'Iati',
+    'Ibirajuba', 'Iguaraci', 'Ingazeira', 'Itacuruba', 'Itapetim',
+    'Itaquitinga', 'Jaqueira', 'Jataúba', 'Jatobá', 'Joaquim Nabuco',
+    'Jucati', 'Jupi', 'Jurema', 'Lagoa do Carro', 'Lagoa do Ouro',
+    'Lagoa dos Gatos', 'Machados', 'Maraial', 'Mirandiba', 'Moreilândia',
+    'Orocó', 'Parnamirim', 'Poção', 'Ponto Novo', 'Primavera', 'Quipapá',
+    'Quixaba', 'Saloá', 'Sanharó', 'Santa Cruz da Baixa Verde',
+    'Santa Filomena', 'Santa Terezinha', 'São Benedito do Sul',
+    'São Vicente Ferrer', 'Serra Negra do Norte', 'Serrita', 'Tacaimbó',
+    'Terra Nova', 'Venturosa', 'Verdejante', 'Vertente do Lério'
+]
+
+
 st.markdown("""
 <style>
     /* Fundo */
@@ -17,7 +59,7 @@ st.markdown("""
         border-radius: 8px;
         padding: 20px;
         color: white;
-        height: 140px; /* Altura ajustada para o número caber folgado */
+        height: 140px; 
         box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         font-family: 'Segoe UI', sans-serif;
         transition: transform 0.2s, border 0.2s;
@@ -25,13 +67,13 @@ st.markdown("""
         /* FLEXBOX para alinhar o conteúdo verticalmente */
         display: flex;
         flex-direction: column;
-        justify-content: space-between; /* ESSENCIAL: Empurra o número para baixo */
+        justify-content: space-between; 
     }
     
     /* MOUSE: Cresce e fica Amarelo */
     .card:hover {
         transform: scale(1.02);
-        border: 2px solid #FFD700; /* Borda AMARELA */
+        border: 2px solid #FFD700; 
         box-shadow: 0 8px 16px rgba(255, 215, 0, 0.3);
         cursor: pointer;
     }
@@ -42,15 +84,14 @@ st.markdown("""
         font-weight: 600;
         text-transform: uppercase;
         margin-bottom: 5px;
-        line-height: 1.2; /* Ajuste fino */
+        line-height: 1.2;
     }
     
-    /* CLASSE QUE DEFINE O NÚMERO GRANDE */
     .card-value {
-        font-size: 36px; /* Tamanho do número */
+        font-size: 36px;
         font-weight: bold;
         margin-top: 5px;
-        line-height: 1; /* Garante que o número não ocupe muita altura */
+        line-height: 1;
     }
     
     /* Cores dos Cards */
@@ -61,6 +102,14 @@ st.markdown("""
     
     /* Textos Gerais */
     h3 { font-size: 18px; margin: 0; color: white !important; font-weight: 500; }
+
+    /* NOVO: Título específico do Menu Lateral - GARANTINDO QUE SEJA PRETO */
+    .sidebar-title h3 {
+        color: #000000 !important; /* Cor preta */
+        font-size: 20px;
+        font-weight: 600;
+        margin-top: 5px; /* Ajuste para o espaçamento */
+    }
     
     /* Box da Previsão */
     .prediction-box {
@@ -75,7 +124,9 @@ st.markdown("""
 # 3. MENU LATERAL
 with st.sidebar:
     st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Bras%C3%A3o_CBMPE.png/120px-Bras%C3%A3o_CBMPE.png", width=60)
-    st.markdown("### **Bombeiros PE**")
+    
+    # APLICAÇÃO DA NOVA CLASSE PARA FORÇAR O PRETO
+    st.markdown('<div class="sidebar-title">### **Bombeiros PE**</div>', unsafe_allow_html=True)
     
     menu_selecionado = st.radio(
         "Menu Principal",
@@ -86,11 +137,10 @@ with st.sidebar:
     
     st.markdown("---")
     
-    df_filtrado = pd.DataFrame() # Inicializa o DF fora do if/else
+    df_filtrado = pd.DataFrame() 
 
     if menu_selecionado == "Dashboard":
         with st.expander("Filtros de Dados", expanded=True):
-            # SEED 42 GARANTE QUE OS NÚMEROS SEJAM SEMPRE OS MESMOS (1000, 33...)
             np.random.seed(42)
             tipos_ocorrencia = [
                 'Incêndio', 'Salvamento', 'Vistoria', 'Acidente', 
@@ -98,9 +148,8 @@ with st.sidebar:
             ]
             faixas = ['18-25 anos', '26-35 anos', '36-50 anos', '51-65 anos', 'Mais de 65 anos']
             
-            # Gerando EXATAMENTE 1000 linhas
             df = pd.DataFrame({
-                'Bairro': np.random.choice(['Boa Viagem', 'Santo Amaro', 'Várzea', 'Ibura', 'Derby'], 1000),
+                'Bairro': np.random.choice(municipios_pe, 1000),
                 'Tipo': np.random.choice(tipos_ocorrencia, 1000),
                 'Status': np.random.choice(['Concluído', 'Em Andamento', 'Aberto'], 1000),
                 'Faixa Etaria': np.random.choice(faixas, 1000, p=[0.2, 0.3, 0.25, 0.15, 0.1]),
@@ -109,7 +158,7 @@ with st.sidebar:
                 'Longitude': np.random.uniform(-34.88, -34.95, 1000)
             })
             
-            bairro_sel = st.multiselect("Bairro", df['Bairro'].unique(), default=df['Bairro'].unique())
+            bairro_sel = st.multiselect("Cidade / Bairro", df['Bairro'].unique(), default=['Recife', 'Caruaru', 'Petrolina'])
             df_filtrado = df[df['Bairro'].isin(bairro_sel)]
 
     st.markdown("---")
@@ -127,13 +176,15 @@ if menu_selecionado == "Dashboard":
     c1, c2, c3, c4 = st.columns(4)
     
     # Cálculos
-    v_total = len(df_filtrado)
-    v_media = int(v_total/30) # Média simples para 30 dias
-    v_abertas = len(df_filtrado[df_filtrado["Status"]=="Aberto"])
-    v_resolvidas = len(df_filtrado[df_filtrado["Status"]=="Concluído"])
+    if not df_filtrado.empty:
+        v_total = len(df_filtrado)
+        v_media = int(v_total/30)
+        v_abertas = len(df_filtrado[df_filtrado["Status"]=="Aberto"])
+        v_resolvidas = len(df_filtrado[df_filtrado["Status"]=="Concluído"])
+    else:
+        v_total, v_media, v_abertas, v_resolvidas = 0, 0, 0, 0
     
-    # OS CARDS AGORA UTILIZAM A ESTRUTURA COMPLETA
-    # <div class="card-value"> para o número grande
+    # Cards com a estrutura correta (Label, Título, Valor)
     with c1: st.markdown(f'<div class="card bg-laranja"><span class="card-label">Total</span><h3>Ocorrências Totais</h3><div class="card-value">{v_total}</div></div>', unsafe_allow_html=True)
     with c2: st.markdown(f'<div class="card bg-azul"><span class="card-label">Média</span><h3>Média Diária</h3><div class="card-value">{v_media}</div></div>', unsafe_allow_html=True)
     with c3: st.markdown(f'<div class="card bg-vermelho"><span class="card-label">Atenção</span><h3>Ocorrências Abertas</h3><div class="card-value">{v_abertas}</div></div>', unsafe_allow_html=True)
@@ -163,9 +214,6 @@ if menu_selecionado == "Dashboard":
         st.markdown("##### Evolução (Dezembro 2025)")
         meses = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4']
         fig_line = px.line(x=meses, y=[10, 25, 20, 45], markers=True, color_discrete_sequence=['#5C6BC0'], labels={"y": "Ocorrências"})
-        # Removi as outras séries para simplificar o exemplo, mas você pode adicioná-las
-        # fig_line.add_scatter(x=meses, y=[5, 15, 35, 30], mode='lines+markers', name='Série 2', line=dict(color='#26C6DA'))
-        # fig_line.add_scatter(x=meses, y=[15, 10, 25, 40], mode='lines+markers', name='Série 3', line=dict(color='#1E88E5'))
         fig_line.update_layout(height=300, margin=dict(l=0, r=0, t=0, b=0), showlegend=False, xaxis_title="", yaxis_title="",
                                hoverlabel=hover_config)
         st.plotly_chart(fig_line, use_container_width=True)
@@ -174,14 +222,13 @@ if menu_selecionado == "Dashboard":
         st.markdown("##### Tipos de Ocorrência")
         cores = ['#FFCA28', '#D32F2F', '#1976D2', '#FFA726', '#546E7A', '#7B1FA2', '#424242']
         
-        # ROSCA AJUSTADA: Buraco menor (0.4) e Legenda Clicável (showlegend=True)
         fig_pie = px.pie(df_filtrado, names='Tipo', hole=0.4, color_discrete_sequence=cores)
         
         fig_pie.update_layout(
             height=300, margin=dict(l=0, r=0, t=0, b=0), 
-            showlegend=True, # Bolinhas clicáveis
+            showlegend=True, 
             legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.0),
-            hoverlabel=hover_config # Hover Amarelo
+            hoverlabel=hover_config
         )
         st.plotly_chart(fig_pie, use_container_width=True)
 
@@ -193,7 +240,7 @@ if menu_selecionado == "Dashboard":
     with c_ia1:
         st.markdown("##### Fatores Determinantes nos Tipos de Caso")
         fatores = pd.DataFrame({
-            'Fator': ['Localização (Bairro)', 'Horário da Ocorrência', 'Clima / Chuva', 'Infraestrutura Urbana'],
+            'Fator': ['Localização (Cidade/Bairro)', 'Horário da Ocorrência', 'Clima / Chuva', 'Infraestrutura Urbana'],
             'Peso': [0.85, 0.70, 0.40, 0.20]
         }).sort_values('Peso')
         
@@ -207,17 +254,15 @@ if menu_selecionado == "Dashboard":
         st.markdown('<div class="prediction-box">', unsafe_allow_html=True)
         col_in1, col_in2 = st.columns(2)
         
-        # As variáveis local e tipo precisam ser definidas a partir do DataFrame 'df', não 'df_filtrado', para garantir que todas as opções apareçam.
-        with col_in1: local = st.selectbox("Bairro", df['Bairro'].unique(), key="bairro_simulador")
-        with col_in2: tipo = st.selectbox("Ocorrência", df['Tipo'].unique(), key="tipo_simulador")
+        with col_in1: local = st.selectbox("Cidade / Bairro", municipios_pe, key="bairro_simulador")
+        with col_in2: tipo = st.selectbox("Ocorrência", tipos_ocorrencia, key="tipo_simulador")
         
         if st.button("Prever Risco", type="primary"):
-            # Lógica de simulação simples (pode ser substituída por um modelo real)
             risco = 87
             if tipo == "Improcedentes / Trotes":
-                st.warning(f"Alerta: Alta probabilidade de TROTE ({risco}%) nesta região.")
+                st.warning(f"Alerta: Alta probabilidade de TROTE ({risco}%) em {local}.")
             elif tipo == "Produtos Perigosos":
-                st.error(f"RISCO CRÍTICO: 95% (Vazamento Químico/Gás)")
+                st.error(f"RISCO CRÍTICO: 95% (Vazamento Químico/Gás) em {local}.")
             else:
                 st.success(f"Risco Estimado para {tipo} em {local}: ALTO ({risco}%)")
         st.markdown('</div>', unsafe_allow_html=True)
