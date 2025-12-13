@@ -22,9 +22,10 @@ st.markdown("""
         font-family: 'Segoe UI', sans-serif;
         transition: transform 0.2s, border 0.2s;
         border: 2px solid transparent;
+        /* FLEXBOX para alinhar o conteúdo verticalmente */
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        justify-content: space-between; /* ESSENCIAL: Empurra o número para baixo */
     }
     
     /* MOUSE: Cresce e fica Amarelo */
@@ -41,12 +42,15 @@ st.markdown("""
         font-weight: 600;
         text-transform: uppercase;
         margin-bottom: 5px;
+        line-height: 1.2; /* Ajuste fino */
     }
     
+    /* CLASSE QUE DEFINE O NÚMERO GRANDE */
     .card-value {
-        font-size: 36px;
+        font-size: 36px; /* Tamanho do número */
         font-weight: bold;
         margin-top: 5px;
+        line-height: 1; /* Garante que o número não ocupe muita altura */
     }
     
     /* Cores dos Cards */
@@ -56,7 +60,7 @@ st.markdown("""
     .bg-verde { background-color: #388E3C; }
     
     /* Textos Gerais */
-    h3 { font-size: 14px; margin: 0; color: white !important; font-weight: 500; }
+    h3 { font-size: 18px; margin: 0; color: white !important; font-weight: 500; }
     
     /* Box da Previsão */
     .prediction-box {
@@ -82,6 +86,8 @@ with st.sidebar:
     
     st.markdown("---")
     
+    df_filtrado = pd.DataFrame() # Inicializa o DF fora do if/else
+
     if menu_selecionado == "Dashboard":
         with st.expander("Filtros de Dados", expanded=True):
             # SEED 42 GARANTE QUE OS NÚMEROS SEJAM SEMPRE OS MESMOS (1000, 33...)
@@ -92,7 +98,7 @@ with st.sidebar:
             ]
             faixas = ['18-25 anos', '26-35 anos', '36-50 anos', '51-65 anos', 'Mais de 65 anos']
             
-            # Gerando EXATAMENTE 1000 linhas para bater com seu print
+            # Gerando EXATAMENTE 1000 linhas
             df = pd.DataFrame({
                 'Bairro': np.random.choice(['Boa Viagem', 'Santo Amaro', 'Várzea', 'Ibura', 'Derby'], 1000),
                 'Tipo': np.random.choice(tipos_ocorrencia, 1000),
@@ -122,10 +128,12 @@ if menu_selecionado == "Dashboard":
     
     # Cálculos
     v_total = len(df_filtrado)
-    v_media = int(v_total/30)
+    v_media = int(v_total/30) # Média simples para 30 dias
     v_abertas = len(df_filtrado[df_filtrado["Status"]=="Aberto"])
     v_resolvidas = len(df_filtrado[df_filtrado["Status"]=="Concluído"])
     
+    # OS CARDS AGORA UTILIZAM A ESTRUTURA COMPLETA
+    # <div class="card-value"> para o número grande
     with c1: st.markdown(f'<div class="card bg-laranja"><span class="card-label">Total</span><h3>Ocorrências Totais</h3><div class="card-value">{v_total}</div></div>', unsafe_allow_html=True)
     with c2: st.markdown(f'<div class="card bg-azul"><span class="card-label">Média</span><h3>Média Diária</h3><div class="card-value">{v_media}</div></div>', unsafe_allow_html=True)
     with c3: st.markdown(f'<div class="card bg-vermelho"><span class="card-label">Atenção</span><h3>Ocorrências Abertas</h3><div class="card-value">{v_abertas}</div></div>', unsafe_allow_html=True)
@@ -154,9 +162,10 @@ if menu_selecionado == "Dashboard":
     with col_g2:
         st.markdown("##### Evolução (Dezembro 2025)")
         meses = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4']
-        fig_line = px.line(x=meses, y=[10, 25, 20, 45], markers=True)
-        fig_line.add_scatter(x=meses, y=[5, 15, 35, 30], mode='lines+markers', name='Série 2', line=dict(color='#26C6DA'))
-        fig_line.add_scatter(x=meses, y=[15, 10, 25, 40], mode='lines+markers', name='Série 3', line=dict(color='#1E88E5'))
+        fig_line = px.line(x=meses, y=[10, 25, 20, 45], markers=True, color_discrete_sequence=['#5C6BC0'], labels={"y": "Ocorrências"})
+        # Removi as outras séries para simplificar o exemplo, mas você pode adicioná-las
+        # fig_line.add_scatter(x=meses, y=[5, 15, 35, 30], mode='lines+markers', name='Série 2', line=dict(color='#26C6DA'))
+        # fig_line.add_scatter(x=meses, y=[15, 10, 25, 40], mode='lines+markers', name='Série 3', line=dict(color='#1E88E5'))
         fig_line.update_layout(height=300, margin=dict(l=0, r=0, t=0, b=0), showlegend=False, xaxis_title="", yaxis_title="",
                                hoverlabel=hover_config)
         st.plotly_chart(fig_line, use_container_width=True)
@@ -197,10 +206,13 @@ if menu_selecionado == "Dashboard":
         st.markdown("##### Simulador de Risco (IA)")
         st.markdown('<div class="prediction-box">', unsafe_allow_html=True)
         col_in1, col_in2 = st.columns(2)
-        with col_in1: local = st.selectbox("Bairro", df['Bairro'].unique())
-        with col_in2: tipo = st.selectbox("Ocorrência", df['Tipo'].unique())
+        
+        # As variáveis local e tipo precisam ser definidas a partir do DataFrame 'df', não 'df_filtrado', para garantir que todas as opções apareçam.
+        with col_in1: local = st.selectbox("Bairro", df['Bairro'].unique(), key="bairro_simulador")
+        with col_in2: tipo = st.selectbox("Ocorrência", df['Tipo'].unique(), key="tipo_simulador")
         
         if st.button("Prever Risco", type="primary"):
+            # Lógica de simulação simples (pode ser substituída por um modelo real)
             risco = 87
             if tipo == "Improcedentes / Trotes":
                 st.warning(f"Alerta: Alta probabilidade de TROTE ({risco}%) nesta região.")
