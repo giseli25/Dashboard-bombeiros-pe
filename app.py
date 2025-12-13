@@ -6,39 +6,57 @@ import plotly.express as px
 # 1. CONFIGURAÇÃO DA PÁGINA
 st.set_page_config(page_title="Bombeiros PE", layout="wide")
 
-# 2. CSS PARA O VISUAL (CORES E ESTILO)
+# 2. CSS AVANÇADO (VISUAL FINAL)
 st.markdown("""
 <style>
     /* Fundo */
     .stApp { background-color: #FDFDFD; }
     
-    /* Cards */
+    /* Cards - Com efeito de HOVER AMARELO */
     .card {
         border-radius: 8px;
-        padding: 15px;
+        padding: 20px;
         color: white;
-        height: 120px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        height: 140px; /* Altura ajustada para o número caber folgado */
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         font-family: 'Segoe UI', sans-serif;
+        transition: transform 0.2s, border 0.2s;
+        border: 2px solid transparent;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
-    .card-number {
-        font-size: 11px;
+    
+    /* A MÁGICA DO MOUSE: Cresce e fica Amarelo */
+    .card:hover {
+        transform: scale(1.02);
+        border: 2px solid #FFD700; /* Borda AMARELA */
+        box-shadow: 0 8px 16px rgba(255, 215, 0, 0.3);
+        cursor: pointer;
+    }
+
+    .card-label {
+        font-size: 12px;
         opacity: 0.9;
         font-weight: 600;
         text-transform: uppercase;
-        display: block;
         margin-bottom: 5px;
     }
     
-    /* Cores Exatas */
+    .card-value {
+        font-size: 36px;
+        font-weight: bold;
+        margin-top: 5px;
+    }
+    
+    /* Cores dos Cards */
     .bg-laranja { background-color: #F57C00; }
     .bg-azul { background-color: #3949AB; }
     .bg-vermelho { background-color: #E65100; }
     .bg-verde { background-color: #388E3C; }
     
-    /* Textos */
+    /* Textos Gerais */
     h3 { font-size: 14px; margin: 0; color: white !important; font-weight: 500; }
-    h2 { font-size: 28px; margin: 0; color: white !important; font-weight: bold; }
     
     /* Box da Previsão */
     .prediction-box {
@@ -50,36 +68,31 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 3. MENU LATERAL (SIDEBAR)
+# 3. MENU LATERAL
 with st.sidebar:
     st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Bras%C3%A3o_CBMPE.png/120px-Bras%C3%A3o_CBMPE.png", width=60)
     st.markdown("### **Bombeiros PE**")
     
-    # Menu limpo sem emojis
     menu_selecionado = st.radio(
         "Menu Principal",
-        ["Ocorrências", "Dashboard", "Usuários", "Auditoria"],
-        index=1,
+        ["Dashboard", "Ocorrências", "Usuários", "Auditoria"],
+        index=0,
         label_visibility="collapsed"
     )
     
     st.markdown("---")
     
-    # Filtros
     if menu_selecionado == "Dashboard":
         with st.expander("Filtros de Dados", expanded=True):
+            # SEED 42 GARANTE QUE OS NÚMEROS SEJAM SEMPRE OS MESMOS (1000, 33...)
             np.random.seed(42)
             tipos_ocorrencia = [
-                'Incêndio', 
-                'Salvamento', 
-                'Vistoria', 
-                'Acidente', 
-                'APH', 
-                'Produtos Perigosos', 
-                'Improcedentes / Trotes'
+                'Incêndio', 'Salvamento', 'Vistoria', 'Acidente', 
+                'APH', 'Produtos Perigosos', 'Improcedentes / Trotes'
             ]
             faixas = ['18-25 anos', '26-35 anos', '36-50 anos', '51-65 anos', 'Mais de 65 anos']
             
+            # Gerando EXATAMENTE 1000 linhas para bater com seu print
             df = pd.DataFrame({
                 'Bairro': np.random.choice(['Boa Viagem', 'Santo Amaro', 'Várzea', 'Ibura', 'Derby'], 1000),
                 'Tipo': np.random.choice(tipos_ocorrencia, 1000),
@@ -95,26 +108,36 @@ with st.sidebar:
 
     st.markdown("---")
     col_p1, col_p2 = st.columns([1, 4])
-    with col_p1: st.write("👤") # Mantive apenas este ícone de usuário pois é padrão de UI
+    with col_p1: st.write("👤")
     with col_p2: 
         st.caption("Logado como:")
         st.markdown("**Ana Silva - Admin**")
 
-# 4. CONTEÚDO PRINCIPAL
+# 4. DASHBOARD
 if menu_selecionado == "Dashboard":
     st.title("Visão Geral de Ocorrências")
     
-    # --- CARDS ---
+    # --- CARDS COM NÚMEROS FICTÍCIOS MAS REAIS (DADOS DO DATAFRAME) ---
     c1, c2, c3, c4 = st.columns(4)
-    with c1: st.markdown(f'<div class="card bg-laranja"><span class="card-number">Total</span><h3>Ocorrências Totais</h3><h2>{len(df_filtrado)}</h2></div>', unsafe_allow_html=True)
-    with c2: st.markdown(f'<div class="card bg-azul"><span class="card-number">Média</span><h3>Média Diária</h3><h2>{int(len(df_filtrado)/30)}</h2></div>', unsafe_allow_html=True)
-    with c3: st.markdown(f'<div class="card bg-vermelho"><span class="card-number">Atenção</span><h3>Ocorrências Abertas</h3><h2>{len(df_filtrado[df_filtrado["Status"]=="Aberto"])}</h2></div>', unsafe_allow_html=True)
-    with c4: st.markdown(f'<div class="card bg-verde"><span class="card-number">Sucesso</span><h3>Resolvidas</h3><h2>{len(df_filtrado[df_filtrado["Status"]=="Concluído"])}</h2></div>', unsafe_allow_html=True)
+    
+    # Cálculos
+    v_total = len(df_filtrado)
+    v_media = int(v_total/30)
+    v_abertas = len(df_filtrado[df_filtrado["Status"]=="Aberto"])
+    v_resolvidas = len(df_filtrado[df_filtrado["Status"]=="Concluído"])
+    
+    with c1: st.markdown(f'<div class="card bg-laranja"><span class="card-label">Total</span><h3>Ocorrências Totais</h3><div class="card-value">{v_total}</div></div>', unsafe_allow_html=True)
+    with c2: st.markdown(f'<div class="card bg-azul"><span class="card-label">Média</span><h3>Média Diária</h3><div class="card-value">{v_media}</div></div>', unsafe_allow_html=True)
+    with c3: st.markdown(f'<div class="card bg-vermelho"><span class="card-label">Atenção</span><h3>Ocorrências Abertas</h3><div class="card-value">{v_abertas}</div></div>', unsafe_allow_html=True)
+    with c4: st.markdown(f'<div class="card bg-verde"><span class="card-label">Sucesso</span><h3>Resolvidas</h3><div class="card-value">{v_resolvidas}</div></div>', unsafe_allow_html=True)
 
     st.write("")
     
-    # --- LINHA DE GRÁFICOS ---
+    # --- GRÁFICOS ---
     col_g1, col_g2, col_g3 = st.columns(3)
+
+    # Config do Hover Amarelo
+    hover_config = dict(bgcolor="#FFD700", font_size=14, font_family="Arial", font_color="black")
 
     with col_g1:
         st.markdown("##### Distribuição de Idades")
@@ -124,7 +147,8 @@ if menu_selecionado == "Dashboard":
         
         fig_hist = px.bar(contagem_faixa, x='Faixa', y='Qtd', category_orders={'Faixa': ordem},
                           color_discrete_sequence=['#5C6BC0'])
-        fig_hist.update_layout(xaxis_title="", yaxis_title="Qtd", height=300, margin=dict(l=0, r=0, t=0, b=0))
+        fig_hist.update_layout(xaxis_title="", yaxis_title="Qtd", height=300, margin=dict(l=0, r=0, t=0, b=0),
+                               hoverlabel=hover_config)
         st.plotly_chart(fig_hist, use_container_width=True)
 
     with col_g2:
@@ -133,20 +157,28 @@ if menu_selecionado == "Dashboard":
         fig_line = px.line(x=meses, y=[10, 25, 20, 45], markers=True)
         fig_line.add_scatter(x=meses, y=[5, 15, 35, 30], mode='lines+markers', name='Série 2', line=dict(color='#26C6DA'))
         fig_line.add_scatter(x=meses, y=[15, 10, 25, 40], mode='lines+markers', name='Série 3', line=dict(color='#1E88E5'))
-        fig_line.update_layout(height=300, margin=dict(l=0, r=0, t=0, b=0), showlegend=False, xaxis_title="", yaxis_title="")
+        fig_line.update_layout(height=300, margin=dict(l=0, r=0, t=0, b=0), showlegend=False, xaxis_title="", yaxis_title="",
+                               hoverlabel=hover_config)
         st.plotly_chart(fig_line, use_container_width=True)
 
     with col_g3:
         st.markdown("##### Tipos de Ocorrência")
-        # Cores ajustadas: Roxo para Prod. Perigosos, Cinza para Trotes
         cores = ['#FFCA28', '#D32F2F', '#1976D2', '#FFA726', '#546E7A', '#7B1FA2', '#424242']
-        fig_pie = px.pie(df_filtrado, names='Tipo', hole=0.6, color_discrete_sequence=cores)
-        fig_pie.update_layout(height=300, margin=dict(l=0, r=0, t=0, b=0), showlegend=False)
+        
+        # ROSCA AJUSTADA: Buraco menor (0.4) e Legenda Clicável (showlegend=True)
+        fig_pie = px.pie(df_filtrado, names='Tipo', hole=0.4, color_discrete_sequence=cores)
+        
+        fig_pie.update_layout(
+            height=300, margin=dict(l=0, r=0, t=0, b=0), 
+            showlegend=True, # Bolinhas clicáveis
+            legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.0),
+            hoverlabel=hover_config # Hover Amarelo
+        )
         st.plotly_chart(fig_pie, use_container_width=True)
 
     st.markdown("---")
 
-    # --- PARTE DE BAIXO (IA E MAPA) ---
+    # --- IA E FATORES ---
     c_ia1, c_ia2 = st.columns([1, 1])
 
     with c_ia1:
@@ -157,7 +189,8 @@ if menu_selecionado == "Dashboard":
         }).sort_values('Peso')
         
         fig_bar = px.bar(fatores, x='Peso', y='Fator', orientation='h', color_discrete_sequence=['#5C6BC0'])
-        fig_bar.update_layout(height=250, margin=dict(l=0, r=0, t=0, b=0), yaxis_title="", xaxis_title="Influência")
+        fig_bar.update_layout(height=250, margin=dict(l=0, r=0, t=0, b=0), yaxis_title="", xaxis_title="Influência",
+                              hoverlabel=hover_config)
         st.plotly_chart(fig_bar, use_container_width=True)
 
     with c_ia2:
@@ -179,4 +212,4 @@ if menu_selecionado == "Dashboard":
 
 else:
     st.title("Página em Construção")
-    st.info("Acesse a aba 'Dashboard' para ver os dados.")
+    st.info("Funcionalidade em desenvolvimento.")
