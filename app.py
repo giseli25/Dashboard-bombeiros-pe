@@ -203,7 +203,13 @@ with st.sidebar:
                 'Latitude': np.random.uniform(-7.5, -9.5, 1000), 
                 'Longitude': np.random.uniform(-34.8, -40.5, 1000)
             })
-
+            
+            # --- SIMULAÇÃO DE CLUSTERIZAÇÃO (4 GRUPOS) ---
+            # Simula a atribuição de clusters com base no Risco (Simulando uma variável de gravidade)
+            bins = [0, 40, 65, 85, 100]
+            labels = ['Baixo Risco', 'Risco Moderado', 'Alto Risco', 'Risco Crítico']
+            df['Cluster'] = pd.cut(df['Risco'], bins=bins, labels=labels, include_lowest=True).astype(str)
+            
             # Adicionando a coluna de Região
             df['Regiao'] = df['Cidade'].apply(lambda x: MAP_REGIOES.get(x, 'Outras Regiões'))
             
@@ -297,7 +303,7 @@ if menu_selecionado == "Dashboard":
         
     st.markdown("---") 
 
-    # --- GRÁFICOS ---
+    # --- GRÁFICOS (3 COLUNAS) ---
     col_g1, col_g2, col_g3 = st.columns(3)
 
     hover_config = dict(bgcolor="#FFD700", font_size=14, font_family="Arial", font_color="black")
@@ -335,6 +341,35 @@ if menu_selecionado == "Dashboard":
             hoverlabel=hover_config
         )
         st.plotly_chart(fig_pie, use_container_width=True)
+
+    st.markdown("---")
+    
+    # --- NOVO: GRÁFICO DE CLUSTERIZAÇÃO ---
+    st.markdown("##### Clusterização (Agrupamento de Ocorrências)")
+    
+    if not df_filtrado.empty:
+        # Usa o Risco (e Longitude como proxy para dispersão) e colore pelo Cluster
+        fig_cluster = px.scatter(
+            df_filtrado, 
+            x="Risco", 
+            y="Longitude", 
+            color="Cluster",
+            hover_name="Bairro",
+            symbol="Cluster",
+            size=np.ones(len(df_filtrado)) * 8, # Pontos maiores para visibilidade
+            color_discrete_map={
+                'Baixo Risco': '#388E3C', 
+                'Risco Moderado': '#1E88E5', 
+                'Alto Risco': '#F57C00', 
+                'Risco Crítico': '#D32F2F'
+            },
+            labels={"Risco": "Risco de Ocorrência (0-100%)", "Longitude": "Localização (Eixo Y)"}
+        )
+        
+        fig_cluster.update_traces(marker=dict(line=dict(width=0.5, color='DarkSlateGrey')))
+        fig_cluster.update_layout(height=350, margin=dict(l=10, r=10, t=10, b=10), showlegend=True,
+                                  hoverlabel=hover_config)
+        st.plotly_chart(fig_cluster, use_container_width=True)
 
     st.markdown("---")
 
