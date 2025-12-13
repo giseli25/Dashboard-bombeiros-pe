@@ -4,7 +4,7 @@ import numpy as np
 import plotly.express as px
 
 # 1. CONFIGURAÇÃO DA PÁGINA
-st.set_page_config(page_title="Bombeiros PE", layout="black")
+st.set_page_config(page_title="Bombeiros PE", layout="wide")
 
 # 2. CSS AVANÇADO (VISUAL FINAL)
 st.markdown("""
