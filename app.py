@@ -27,7 +27,7 @@ st.markdown("""
         justify-content: space-between;
     }
     
-    /* A MÁGICA DO MOUSE: Cresce e fica Amarelo */
+    /* MOUSE: Cresce e fica Amarelo */
     .card:hover {
         transform: scale(1.02);
         border: 2px solid #FFD700; /* Borda AMARELA */
@@ -36,7 +36,7 @@ st.markdown("""
     }
 
     .card-label {
-        font-size: 12px;
+        font-size: 14px;
         opacity: 0.9;
         font-weight: 600;
         text-transform: uppercase;
