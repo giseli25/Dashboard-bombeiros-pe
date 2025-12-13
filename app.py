@@ -3,6 +3,46 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 
+# ----------------------------------------------------------------------
+# FUNÇÃO DE SIMULAÇÃO DE MACHINE LEARNING
+# Esta função simula a previsão de um modelo de classificação (0 a 100%)
+# O risco é ajustado com base na cidade (simulando fatores geográficos)
+# e no tipo de ocorrência (simulando a gravidade).
+# ----------------------------------------------------------------------
+
+def simular_previsao_risco(cidade, tipo_ocorrencia):
+    """Simula a previsão de um modelo de Risco (0-100%)."""
+    
+    # Risco Base (simulando a previsão média do modelo)
+    risco_base = 65 
+    
+    # 1. Ajuste por Tipo de Ocorrência (Gravidade)
+    if tipo_ocorrencia == "Produtos Perigosos":
+        risco_base += 30 # Risco muito alto
+    elif tipo_ocorrencia == "Incêndio":
+        risco_base += 15
+    elif tipo_ocorrencia == "Improcedentes / Trotes":
+        risco_base = 5 # Risco muito baixo (o que deve ser reportado é a probabilidade de ser Trote)
+    elif tipo_ocorrencia == "APH":
+        risco_base += 10
+
+    # 2. Ajuste por Cidade (Fator Geográfico/Metropolitano)
+    if cidade in ['Recife', 'Olinda', 'Jaboatão dos Guararapes']:
+        risco_base += 10 # Risco ligeiramente maior em grandes centros
+    elif cidade in ['Petrolina', 'Caruaru']:
+        risco_base += 5
+    
+    # Garante que o risco esteja entre 0 e 100
+    risco_final = max(0, min(100, risco_base))
+    
+    # Se for Trote, retorna o risco de TROTE, senão retorna o risco da OCORRÊNCIA
+    if tipo_ocorrencia == "Improcedentes / Trotes":
+        return 95, "Trote" # 95% de chance de ser trote
+    else:
+        # Adiciona uma pequena variação aleatória para simular a imprecisão do modelo
+        variacao = np.random.randint(-5, 5)
+        return max(10, min(100, risco_final + variacao)), "Ocorrência"
+
 # 1. CONFIGURAÇÃO DA PÁGINA
 st.set_page_config(page_title="Bombeiros PE", layout="wide")
 
@@ -226,38 +266,36 @@ if menu_selecionado == "Dashboard":
     
     if not df_filtrado.empty:
         
-        # 1. Cria o mapa de dispersão (scatter mapbox) com Plotly Express
+        # Cria o mapa de dispersão (scatter mapbox) com Plotly Express
         fig_map = px.scatter_mapbox(
             df_filtrado, 
             lat="Latitude", 
             lon="Longitude", 
-            color="Tipo", # Colore os pontos pelo tipo de ocorrência
+            color="Tipo", 
             hover_name="Bairro", 
-            zoom=7, # Zoom para o estado de PE
+            zoom=7, 
             height=500,
-            size_max=15, # DESTAQUE: Define o tamanho máximo dos pontos
-            size=np.ones(len(df_filtrado)), # Usa um tamanho base 1 para ter o size_max como limite
-            mapbox_style="carto-positron" # Estilo de mapa claro e limpo
+            size_max=15, 
+            size=np.ones(len(df_filtrado)), 
+            mapbox_style="carto-positron" 
         )
         
-        # 2. Ajusta as cores, centro e marcadores (AUMENTA A VISIBILIDADE DOS PONTOS)
+        # Ajusta as cores, centro e marcadores (AUMENTA A VISIBILIDADE DOS PONTOS)
         fig_map.update_layout(
             margin={"r":0,"t":0,"l":0,"b":0},
             mapbox={
-                'center': {'lat': -8.3, 'lon': -37.9}, # Centro aproximado de PE
-                'zoom': 6.5 # Zoom levemente maior
+                'center': {'lat': -8.3, 'lon': -37.9}, 
+                'zoom': 6.5 
             },
-            # Aumenta o tamanho dos marcadores de forma programática (opcional)
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
         )
         
-        # 3. Exibe o mapa no Streamlit
         st.plotly_chart(fig_map, use_container_width=True)
         
     else:
         st.info("Filtre pelo menos uma região, cidade ou bairro para visualizar a distribuição no mapa.")
         
-    st.markdown("---") # Separador visual
+    st.markdown("---") 
 
     # --- GRÁFICOS ---
     col_g1, col_g2, col_g3 = st.columns(3)
@@ -327,14 +365,18 @@ if menu_selecionado == "Dashboard":
         with col_in2: tipo = st.selectbox("Ocorrência", tipos_ocorrencia, key="tipo_simulador")
         
         if st.button("Prever Risco", type="primary"):
-            # LÓGICA DO ML DEVE SER IMPLEMENTADA AQUI
-            risco = 87
-            if tipo == "Improcedentes / Trotes":
+            # CHAMA A FUNÇÃO DE SIMULAÇÃO DE MACHINE LEARNING
+            risco, tipo_risco = simular_previsao_risco(local, tipo)
+            
+            if tipo_risco == "Trote":
                 st.warning(f"Alerta: Alta probabilidade de TROTE ({risco}%) em {local}.")
-            elif tipo == "Produtos Perigosos":
-                st.error(f"RISCO CRÍTICO: 95% (Vazamento Químico/Gás) em {local}.")
+            elif risco > 85:
+                st.error(f"RISCO CRÍTICO: {risco}% (Ação Imediata Requerida) em {local}.")
+            elif risco > 65:
+                st.info(f"Risco Estimado para {tipo} em {local}: ALTO ({risco}%)")
             else:
-                st.success(f"Risco Estimado para {tipo} em {local}: ALTO ({risco}%)")
+                st.success(f"Risco Estimado para {tipo} em {local}: MODERADO ({risco}%)")
+                
         st.markdown('</div>', unsafe_allow_html=True)
 
 else:
