@@ -26,7 +26,7 @@ def simular_previsao_risco(cidade, tipo_ocorrencia):
     elif tipo_ocorrencia == "APH":
         risco_base += 10
 
-    # 2.  Cidade (Fator Geográfico/Metropolitano)
+    # 2. Ajuste por Cidade (Fator Geográfico/Metropolitano)
     if cidade in ['Recife', 'Olinda', 'Jaboatão dos Guararapes']:
         risco_base += 10 # Risco ligeiramente maior em grandes centros
     elif cidade in ['Petrolina', 'Caruaru']:
@@ -39,7 +39,7 @@ def simular_previsao_risco(cidade, tipo_ocorrencia):
     if tipo_ocorrencia == "Improcedentes / Trotes":
         return 95, "Trote" # 95% de chance de ser trote
     else:
-        
+        # Adiciona uma pequena variação aleatória para simular a imprecisão do modelo
         variacao = np.random.randint(-5, 5)
         return max(10, min(100, risco_final + variacao)), "Ocorrência"
 
@@ -156,6 +156,13 @@ st.markdown("""
         margin-top: 5px; 
     }
     
+    /* Centraliza a imagem no sidebar (ajuste estético) */
+    [data-testid="stSidebar"] img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
     /* Box da Previsão */
     .prediction-box {
         background-color: #E8EAF6;
@@ -168,9 +175,14 @@ st.markdown("""
 
 # 3. MENU LATERAL
 with st.sidebar:
+    # -----------------------------------------------
+    # IMAGEM (BRASÃO) NO TOPO DO MENU LATERAL
+    # -----------------------------------------------
     st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Bras%C3%A3o_CBMPE.png/120px-Bras%C3%A3o_CBMPE.png", width=60)
     
-    st.markdown('<div class="sidebar-title">Bombeiros PE</div>', unsafe_allow_html=True)
+    # TÍTULO LOGO ABAIXO DA IMAGEM
+    # Nota: Removi o markdown de cabeçalho '###' do HTML, pois já foi aplicado na classe .sidebar-title h3
+    st.markdown('<div class="sidebar-title">### **Bombeiros PE**</div>', unsafe_allow_html=True)
     
     menu_selecionado = st.radio(
         "Menu Principal",
@@ -205,7 +217,6 @@ with st.sidebar:
             })
             
             # --- SIMULAÇÃO DE CLUSTERIZAÇÃO (4 GRUPOS) ---
-            # Simula a atribuição de clusters com base no Risco (Simulando uma variável de gravidade)
             bins = [0, 40, 65, 85, 100]
             labels = ['Baixo Risco', 'Risco Moderado', 'Alto Risco', 'Risco Crítico']
             df['Cluster'] = pd.cut(df['Risco'], bins=bins, labels=labels, include_lowest=True).astype(str)
