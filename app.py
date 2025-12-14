@@ -175,14 +175,11 @@ st.markdown("""
 
 # 3. MENU LATERAL
 with st.sidebar:
-    # -----------------------------------------------
-    # IMAGEM (BRASÃO) NO TOPO DO MENU LATERAL
-    # -----------------------------------------------
+    
     st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Bras%C3%A3o_CBMPE.png/120px-Bras%C3%A3o_CBMPE.png", width=60)
     
-    # TÍTULO LOGO ABAIXO DA IMAGEM
-    # Nota: Removi o markdown de cabeçalho '###' do HTML, pois já foi aplicado na classe .sidebar-title h3
-    st.markdown('<div class="sidebar-title">### **Bombeiros PE**</div>', unsafe_allow_html=True)
+    
+    st.markdown('<div class="sidebar-title">Bombeiros PE</div>', unsafe_allow_html=True)
     
     menu_selecionado = st.radio(
         "Menu Principal",
@@ -204,7 +201,7 @@ with st.sidebar:
             ]
             faixas = ['18-25 anos', '26-35 anos', '36-50 anos', '51-65 anos', 'Mais de 65 anos']
             
-            # --- CRIAÇÃO DO DATAFRAME COM A COLUNA DE BAIRRO ---
+          
             df = pd.DataFrame({
                 'Cidade': np.random.choice(municipios_pe, 1000),
                 'Bairro': np.random.choice(BAIRROS_COMUNS, 1000), 
@@ -221,30 +218,26 @@ with st.sidebar:
             labels = ['Baixo Risco', 'Risco Moderado', 'Alto Risco', 'Risco Crítico']
             df['Cluster'] = pd.cut(df['Risco'], bins=bins, labels=labels, include_lowest=True).astype(str)
             
-            # Adicionando a coluna de Região
+            
             df['Regiao'] = df['Cidade'].apply(lambda x: MAP_REGIOES.get(x, 'Outras Regiões'))
             
-            # --- FILTROS EM CASCATA ---
-            
-            # FILTRO 1: REGIÃO
             regiao_sel = st.multiselect("Região", df['Regiao'].unique(), 
                                         default=['Metropolitana', 'Agreste'])
             
             df_regiao = df[df['Regiao'].isin(regiao_sel)]
 
-            # FILTRO 2: CIDADE (só exibe cidades dentro da região selecionada)
+            
             cidade_opcoes = df_regiao['Cidade'].unique()
             cidade_sel = st.multiselect("Cidade", cidade_opcoes, 
                                         default=[c for c in ['Recife', 'Caruaru'] if c in cidade_opcoes])
 
             df_cidade = df_regiao[df_regiao['Cidade'].isin(cidade_sel)]
             
-            # FILTRO 3: BAIRRO (só exibe bairros dentro das cidades selecionadas)
             bairro_opcoes = df_cidade['Bairro'].unique()
             bairro_sel = st.multiselect("Bairro", bairro_opcoes, 
                                         default=bairro_opcoes if len(bairro_opcoes) < 5 else bairro_opcoes[:5])
 
-            # FILTRO FINAL
+            
             df_filtrado = df_cidade[df_cidade['Bairro'].isin(bairro_sel)]
 
     st.markdown("---")
