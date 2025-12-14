@@ -26,7 +26,7 @@ def simular_previsao_risco(cidade, tipo_ocorrencia):
     elif tipo_ocorrencia == "APH":
         risco_base += 10
 
-    # 2. Ajuste por Cidade (Fator Geográfico/Metropolitano)
+    # 2.  Cidade (Fator Geográfico/Metropolitano)
     if cidade in ['Recife', 'Olinda', 'Jaboatão dos Guararapes']:
         risco_base += 10 # Risco ligeiramente maior em grandes centros
     elif cidade in ['Petrolina', 'Caruaru']:
@@ -39,7 +39,7 @@ def simular_previsao_risco(cidade, tipo_ocorrencia):
     if tipo_ocorrencia == "Improcedentes / Trotes":
         return 95, "Trote" # 95% de chance de ser trote
     else:
-        # Adiciona uma pequena variação aleatória para simular a imprecisão do modelo
+        
         variacao = np.random.randint(-5, 5)
         return max(10, min(100, risco_final + variacao)), "Ocorrência"
 
@@ -170,7 +170,7 @@ st.markdown("""
 with st.sidebar:
     st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Bras%C3%A3o_CBMPE.png/120px-Bras%C3%A3o_CBMPE.png", width=60)
     
-    st.markdown('<div class="sidebar-title">### **Bombeiros PE**</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-title">Bombeiros PE</div>', unsafe_allow_html=True)
     
     menu_selecionado = st.radio(
         "Menu Principal",
